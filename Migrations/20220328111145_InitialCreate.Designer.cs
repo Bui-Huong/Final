@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Back_end.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20220328082157_InitialCreate")]
+    [Migration("20220328111145_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,16 +43,42 @@ namespace Back_end.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<string>("name")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("AssetId");
 
-                    b.HasIndex("CategoryId")
-                        .IsUnique();
-
                     b.ToTable("Asset", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            AssetId = 1,
+                            AssetState = 2,
+                            AssetStatus = ".......",
+                            AssignmentId = 1,
+                            CategoryId = 1,
+                            Name = "mouse keyboard"
+                        },
+                        new
+                        {
+                            AssetId = 2,
+                            AssetState = 0,
+                            AssetStatus = ".......",
+                            AssignmentId = 2,
+                            CategoryId = 2,
+                            Name = "name tags"
+                        },
+                        new
+                        {
+                            AssetId = 3,
+                            AssetState = 1,
+                            AssetStatus = ".......",
+                            AssignmentId = 3,
+                            CategoryId = 3,
+                            Name = "flowers"
+                        });
                 });
 
             modelBuilder.Entity("Back_end.DB.Entities.Assignment", b =>
@@ -60,8 +86,6 @@ namespace Back_end.Migrations
                     b.Property<int>("AssignmentId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AssignmentId"), 1L, 1);
 
                     b.Property<int>("AssetId")
                         .HasColumnType("int");
@@ -105,6 +129,26 @@ namespace Back_end.Migrations
                     b.HasKey("CategoryId");
 
                     b.ToTable("Category", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            CategoryId = 1,
+                            Name = "Technology",
+                            Perfix = "......"
+                        },
+                        new
+                        {
+                            CategoryId = 2,
+                            Name = "Personal items",
+                            Perfix = "......"
+                        },
+                        new
+                        {
+                            CategoryId = 3,
+                            Name = "Other",
+                            Perfix = "......"
+                        });
                 });
 
             modelBuilder.Entity("Back_end.DB.Entities.User", b =>
@@ -169,9 +213,6 @@ namespace Back_end.Migrations
 
                     b.HasKey("RequestId");
 
-                    b.HasIndex("AssignmentId")
-                        .IsUnique();
-
                     b.HasIndex("ProcessedByUserId");
 
                     b.HasIndex("RequestedByUserId");
@@ -181,66 +222,63 @@ namespace Back_end.Migrations
 
             modelBuilder.Entity("Back_end.DB.Entities.Asset", b =>
                 {
-                    b.HasOne("Back_end.DB.Entities.Assignment", "Assignment")
+                    b.HasOne("Back_end.DB.Entities.Category", "Category")
                         .WithOne("Asset")
                         .HasForeignKey("Back_end.DB.Entities.Asset", "AssetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Back_end.DB.Entities.Category", "Category")
-                        .WithOne("Asset")
-                        .HasForeignKey("Back_end.DB.Entities.Asset", "CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Assignment");
 
                     b.Navigation("Category");
                 });
 
             modelBuilder.Entity("Back_end.DB.Entities.Assignment", b =>
                 {
+                    b.HasOne("Back_end.DB.Entities.Asset", "Asset")
+                        .WithOne("Assignment")
+                        .HasForeignKey("Back_end.DB.Entities.Assignment", "AssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Back_end.Entities.ReturningRequest", "ReturningRequest")
+                        .WithOne("Assignment")
+                        .HasForeignKey("Back_end.DB.Entities.Assignment", "AssignmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Back_end.DB.Entities.User", "User")
                         .WithMany("Assignments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Asset");
+
+                    b.Navigation("ReturningRequest");
+
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Back_end.Entities.ReturningRequest", b =>
                 {
-                    b.HasOne("Back_end.DB.Entities.Assignment", "Assignment")
-                        .WithOne("ReturningRequest")
-                        .HasForeignKey("Back_end.Entities.ReturningRequest", "AssignmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Back_end.DB.Entities.User", "ProcessedBy")
-                        .WithMany("Accepted")
+                        .WithMany("Processed")
                         .HasForeignKey("ProcessedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Back_end.DB.Entities.User", "RequestedBy")
                         .WithMany("Request")
                         .HasForeignKey("RequestedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Assignment");
 
                     b.Navigation("ProcessedBy");
 
                     b.Navigation("RequestedBy");
                 });
 
-            modelBuilder.Entity("Back_end.DB.Entities.Assignment", b =>
+            modelBuilder.Entity("Back_end.DB.Entities.Asset", b =>
                 {
-                    b.Navigation("Asset")
-                        .IsRequired();
-
-                    b.Navigation("ReturningRequest")
+                    b.Navigation("Assignment")
                         .IsRequired();
                 });
 
@@ -252,11 +290,16 @@ namespace Back_end.Migrations
 
             modelBuilder.Entity("Back_end.DB.Entities.User", b =>
                 {
-                    b.Navigation("Accepted");
-
                     b.Navigation("Assignments");
 
+                    b.Navigation("Processed");
+
                     b.Navigation("Request");
+                });
+
+            modelBuilder.Entity("Back_end.Entities.ReturningRequest", b =>
+                {
+                    b.Navigation("Assignment");
                 });
 #pragma warning restore 612, 618
         }

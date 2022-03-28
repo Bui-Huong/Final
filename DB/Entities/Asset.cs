@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -15,8 +16,9 @@ namespace Back_end.DB.Entities
         public int AssetId{get;set;}
         public int CategoryId{get;set;}
         public int AssignmentId{get;set;}
-        public string name{get;set;}
+        public string Name{get;set;}
         public string AssetStatus{get;set;}
+        [Required, DefaultValue(AssetState.WaitingForRecycle)]
         public AssetState AssetState{get;set;}
         public Assignment Assignment{get;set;}
         public Category Category{get;set;}

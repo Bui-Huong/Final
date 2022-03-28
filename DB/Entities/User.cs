@@ -28,7 +28,7 @@ namespace Back_end.DB.Entities
         public Role Role{get;set;} 
         public DateTime JoindedDate{get;set;}
         public ICollection <ReturningRequest> Request{get;set;}
-        public ICollection <ReturningRequest> Accepted{get;set;}
+        public ICollection <ReturningRequest> Processed{get;set;}
         public ICollection<Assignment>? Assignments{get;set;}
     }
 }

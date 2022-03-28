@@ -2,9 +2,9 @@ namespace Back_end.Enums
 {
     public enum AssetState
     {
-        Avaliable,
+        Avaliable ,
         NotAvliable,
-        WaitingForRecycle,
+        WaitingForRecycle ,
         Recycled
     }
 }
